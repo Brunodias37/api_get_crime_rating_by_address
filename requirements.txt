@@ -1,0 +1,4 @@
+pyjwt
+passlib[bcrypt]
+fastapi
+python-multipart
