@@ -1,6 +1,7 @@
 from fastapi import FastAPI, HTTPException
 import pyarrow.parquet as pq
 import uvicorn
+
 import json
 import geopandas as gpd  # Validar se vamos utilizar
 
@@ -20,7 +21,7 @@ async def buscar_enderecos(data: dict):
 
     resultados = []
     for logradouro in enderecos_pesquisa:
-        ocorrencias = df[df['LOGRADOURO'] == logradouro]
+        ocorrencias = df[df['LOGRADOURO_normalizado'] == logradouro.upper()]
         qtd = len(ocorrencias)
         resultados.append({"Rua": logradouro, "QTD": qtd})
 
