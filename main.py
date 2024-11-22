@@ -1,22 +1,30 @@
-from fastapi import FastAPI, HTTPException
+import json
+
+import geopandas as gpd  # Validar se vamos utilizar
 import pyarrow.parquet as pq
 import uvicorn
-
-import json
-import geopandas as gpd  # Validar se vamos utilizar
+from fastapi import FastAPI, HTTPException
+from fastapi.middleware.cors import CORSMiddleware  # Importação para CORS
 
 app = FastAPI()
 
-# Request de teste : {"Rua": ["AVENIDA BRIGADEIRO LUÍS ANTÔNIO","RUA SÃO BENTO"]}
+# Configuração do CORS
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],  # Permite todas as origens, altere para origens específicas em produção
+    allow_credentials=True,
+    allow_methods=["*"],  # Permite todos os métodos (GET, POST, etc.)
+    allow_headers=["*"],  # Permite todos os cabeçalhos
+)
 
-parquet_file = 'C:/Users/Bruno/Downloads/df.parquet.gzip'
+# Request de teste : {"Rua": ["AVENIDA BRIGADEIRO LUÍS ANTÔNIO", "RUA SÃO BENTO"]}
+
+parquet_file = './df.parquet.gzip'
 df = pq.read_table(parquet_file).to_pandas()
 # gdf = gpd.read_parquet(parquet_file)
 
-
 @app.post("/buscar_enderecos/")
 async def buscar_enderecos(data: dict):
-
     enderecos_pesquisa = data.get("Rua", [])
 
     resultados = []
@@ -24,11 +32,6 @@ async def buscar_enderecos(data: dict):
         ocorrencias = df[df['LOGRADOURO_normalizado'] == logradouro.upper()]
         qtd = len(ocorrencias)
         resultados.append({"Rua": logradouro, "QTD": qtd})
-
-    # Se usar GeoPandas, pode-se utilizar consultas espaciais:
-    # geometry = gpd.points_from_xy(df['longitude'], df['latitude'])
-    # gdf = gpd.GeoDataFrame(df, geometry=geometry)
-    # resultados = gdf[gdf.intersects(some_geometry)]
 
     if len(resultados) == 0:
         raise HTTPException(status_code=404, detail="Endereços não encontrados.")

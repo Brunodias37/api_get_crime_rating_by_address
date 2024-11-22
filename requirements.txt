@@ -2,3 +2,8 @@ pyjwt
 passlib[bcrypt]
 fastapi
 python-multipart
+uvicorn
+python-jose
+pyarrow
+geopandas
+flask-cors
